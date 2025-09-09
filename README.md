@@ -18,7 +18,7 @@ The code is in the file `app/app.py`
 2. ## Dockerfile
 
 The simple web application is “dockerized” through use of the `app/Dockerfile` which builds a Docker image based on *python:3.11-slim* image.
-The image is tagged as `envapp:v1` and pushed to the Dockerhub repository called [kkrast/envapp](https://hub.docker.com/repository/docker/kkrast/envapp/general)for public access 
+The image is tagged as `envapp:v1` and pushed to the Dockerhub repository called [kkrast/envapp](https://hub.docker.com/repository/docker/kkrast/envapp/general) for public access 
 
 3. ## Helm Chart
 
@@ -46,7 +46,7 @@ It defines several Kubernetes resources, forming the application by a minimalist
             drop: ["ALL"]
 ```
 
- 	   Additionally, to provide with the required functionality for environments setup, the 	Deployment template has ability to add container environment variable `prod=“true”\”false”` (as only distinction of the two environments *dev* and *prod*), as well as ability to be added additional so called extra environment variable(s)
+  Additionally, to provide with the required functionality for environments setup, the 	Deployment template has ability to add container environment variable `prod=“true”\”false”` (as only distinction of the two environments *dev* and *prod*), as well as ability to be added additional so called extra environment variable(s)
 
 - `templates/service.yaml`
 
@@ -56,7 +56,7 @@ It defines several Kubernetes resources, forming the application by a minimalist
 
   This manifest template configures *HoriziontalPodAutoscaler* (HPA), as it is required in the task.
   HPA resource is configured with `minReplicas: 3` and `maxReplicas:10`, which should ensure at least 3 pods (spread across 3 cluster nodes) as minimum, and scaling out to maximum 10 pods (which also can be spread across the respective number of nodes). 
-  HPA **requires** [metrics-server](https://github.com/kubernetes-sigs/metrics-server) service to be installed  in the Kubernetes cluster, (not mentioned in the task!) so this is considered in the deployment of all the structure (through Kustomise, as will be described further)
+  HPA **requires** [metrics-server](https://github.com/kubernetes-sigs/metrics-server) service to be installed  in the Kubernetes cluster, (not mentioned in the task!) so this is considered in the deployment of all the structure, described further
 
 Helm chart *internal-service* has a `values.yaml` file with the default configuration values, as required: `hub`, `image`, `tag`, `prod`, `env`, `resources` . Some comments have been added to the helm templates, through which the use of some additional variables can be added (marked as optional in `values.yaml`)
 
@@ -64,6 +64,7 @@ Helm chart *internal-service* has a `values.yaml` file with the default configur
 
 As mentioned in the task, the only distinction of dev and prod environment must be the value of the environment variable `PROD=“true”/“false”`, which is controlled by the Helm chart value called *prod*. 
 No ingress resource configured in the chart, also there is no any persistent volume setup.
+
 5. ## Run on [kind](https://kind.sigs.k8s.io/)
 
 - #### Set up a local kind cluster
