@@ -14,6 +14,7 @@ The application does only one thing - to print as JSON the output of `os.environ
 The code is in the file `app/app.py` 
 
 *Note:* The task requires such a simple functionality of the application, without specifying how exactly to achieve it. My research (considering that I’m not a professional web developer) showed, that this functionality, certainly, can be achieved by use of many other programming (scripting) languages, or frameworks, as: Node.JS with Express, Rust with ActixWeb, Go language, even static HTML + shell CGI. The Python with Flask was chosen just because of my sympathy for this programming language.
+
 2. ## Dockerfile
 
 The simple web application is “dockerized” through use of the `app/Dockerfile` which builds a Docker image based on *python:3.11-slim* image.
@@ -65,7 +66,7 @@ As mentioned in the task, the only distinction of dev and prod environment must 
 No ingress resource configured in the chart, also there is no any persistent volume setup.
 5. ## Run on [kind](https://kind.sigs.k8s.io/)
 
-- Set up a local kind cluster
+- #### Set up a local kind cluster
 
 As described in kind [quick-start](https://kind.sigs.k8s.io/docs/user/quick-start) page, it can be installed simply from release binaries, for instance
 
@@ -89,7 +90,7 @@ chmod +x ./kind
 mv ./kind /some-dir-in-your-PATH/kind
 ```
 
-- Install the chart for both dev and prod (installation of [Helm](https://helm.sh/docs/intro/install/) is prerequisite)
+- #### Install the chart for both dev and prod (installation of [Helm](https://helm.sh/docs/intro/install/) is prerequisite)
 1) install metrics-server, required for HPA
 ```
 helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-	server/
