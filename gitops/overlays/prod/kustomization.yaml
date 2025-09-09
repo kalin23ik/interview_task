@@ -1,0 +1,8 @@
+# Kustomize setup of all the resources, that would be specific for the environment
+# They include the common resources as components, as well as the resources specific for the environment
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - common   # common resources - MetricsServer
+  - internal-service   # internal-service resources

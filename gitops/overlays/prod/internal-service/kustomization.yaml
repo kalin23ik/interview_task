@@ -1,0 +1,22 @@
+# Kustomization for deploying envapp Helm chart in the prod namespace
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml   # create namespace before other resources
+
+namespace: prod
+
+helmCharts:
+  - name: internal-service
+    version: 0.1.1
+    releaseName: internal-service-prod
+    #namespace: prod    # setting namespace on helmChart level is not working, that's why it is absent, to use Kustomization namespace
+    valuesFile: ../../../base/helm-internal-service-values.yaml # values common for all environments, from base   
+    additionalValuesFiles:
+      - patch-env.yaml  # distinction between production and non-production environments
+
+# Local sources of the Helm chart
+helmGlobals:
+  chartHome: ../../../../chart
+

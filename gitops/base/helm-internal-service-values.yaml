@@ -1,0 +1,14 @@
+# Default (base) values for envapp helm chart
+hub: "kkrast"
+image: "envapp"
+tag: "v1"
+prod: "false"
+env: {}
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "200m"
+    memory: "256Mi"
+

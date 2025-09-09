@@ -1,0 +1,35 @@
+# required by the task values
+# ----------------------------------------------------------------
+
+hub: "myhubrepo"
+image: "envapp"
+tag: "v1"
+
+prod: "false"
+
+env: {}
+#  EXTRA_ENV: "extra-env-var-value"
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "500m"
+    memory: "256Mi"
+
+
+# Optional values, not requited by the task
+# ----------------------------------------------------------------  
+
+# replicaCount: 3
+
+hpa: {}
+#  minReplicas: 3
+#  maxReplicas: 10
+#  targetCPUUtilizationPercentage: 70
+
+service: {}
+#  type: ClusterIP
+#  port: 80
+#  targetPort: 8080

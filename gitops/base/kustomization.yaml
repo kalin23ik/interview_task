@@ -1,0 +1,13 @@
+# Configuration of the resources, that would be common for all environments 
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+namespace: kube-system
+
+# Inflating of the metrics-server helm chart
+helmCharts:
+  - name: metrics-server
+    repo: https://kubernetes-sigs.github.io/metrics-server/
+    version: 3.11.0
+    releaseName: metrics-server
+    valuesFile: helm-metrics-server-values.yaml

@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "internal-service.fullname" . }}
+  labels:
+    app: {{ include "internal-service.name" . }}
+spec:
+  # replicas: {{ .Values.replicaCount }}  # if set in values.yaml file
+  replicas: 3
+  selector:
+    matchLabels:
+      app: {{ include "internal-service.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "internal-service.name" . }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 2000
+      containers:
+      - name: envapp
+        image: "{{ .Values.hub }}/{{ .Values.image }}:{{ .Values.tag }}"
+        ports:
+          #- containerPort: {{ .Values.service.targetPort }}  # if set in values.yaml file
+          - containerPort: 8080
+        {{- if or (.Values.prod) (.Values.env) }}  
+        env:
+          {{- if .Values.prod }}
+          - name: prod
+            value: "{{ .Values.prod }}"
+          {{- end }}
+          {{- range $key, $value := .Values.env }}
+          - name: {{ $key }}
+            value: "{{ $value }}"
+          {{- end }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - {{ include "internal-service.name" . }}
+                topologyKey: "kubernetes.io/hostname"
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
