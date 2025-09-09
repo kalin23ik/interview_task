@@ -29,7 +29,7 @@ spec:
         {{- if or (.Values.prod) (.Values.env) }}  
         env:
           {{- if .Values.prod }}
-          - name: prod
+          - name: PROD
             value: "{{ .Values.prod }}"
           {{- end }}
           {{- range $key, $value := .Values.env }}
