@@ -101,6 +101,7 @@ helm install metrics-server metrics-server/metrics-server -n kube-system 	\
 ```
   
 2) install the Helm chart for internal-service (make sure you are in the root repository directory)
+
 For dev environment:
 
 ```
