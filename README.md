@@ -14,11 +14,10 @@ The application does only one thing - to print as JSON the output of `os.environ
 The code is in the file `app/app.py` 
 
 *Note:* The task requires such a simple functionality of the application, without specifying how exactly to achieve it. My research (considering that I’m not a professional web developer) showed, that this functionality, certainly, can be achieved by use of many other programming (scripting) languages, or frameworks, as: Node.JS with Express, Rust with ActixWeb, Go language, even static HTML + shell CGI. The Python with Flask was chosen just because of my sympathy for this programming language.
-
 2. ## Dockerfile
 
 The simple web application is “dockerized” through use of the `app/Dockerfile` which builds a Docker image based on *python:3.11-slim* image.
-The image is tagged as `envapp:v1` and pushed to the Dockerhub repository called [kkrast/envapp](https://hub.docker.com/repository/docker/kkrast/envapp/general) for public access 
+The image is tagged as `envapp:v1` and pushed to the Dockerhub repository called [kkrast/envapp](https://hub.docker.com/repository/docker/kkrast/envapp/general)for public access 
 
 3. ## Helm Chart
 
@@ -46,7 +45,7 @@ It defines several Kubernetes resources, forming the application by a minimalist
             drop: ["ALL"]
 ```
 
-  Additionally, to provide with the required functionality for environments setup, the 	Deployment template has ability to add container environment variable `prod=“true”\”false”` (as only distinction of the two environments *dev* and *prod*), as well as ability to be added additional so called extra environment variable(s)
+ 	   Additionally, to provide with the required functionality for environments setup, the 	Deployment template has ability to add container environment variable `prod=“true”\”false”` (as only distinction of the two environments *dev* and *prod*), as well as ability to be added additional so called extra environment variable(s)
 
 - `templates/service.yaml`
 
@@ -56,7 +55,7 @@ It defines several Kubernetes resources, forming the application by a minimalist
 
   This manifest template configures *HoriziontalPodAutoscaler* (HPA), as it is required in the task.
   HPA resource is configured with `minReplicas: 3` and `maxReplicas:10`, which should ensure at least 3 pods (spread across 3 cluster nodes) as minimum, and scaling out to maximum 10 pods (which also can be spread across the respective number of nodes). 
-  HPA **requires** [metrics-server](https://github.com/kubernetes-sigs/metrics-server) service to be installed  in the Kubernetes cluster, (not mentioned in the task!) so this is considered in the deployment of all the structure, described further
+  HPA **requires** [metrics-server](https://github.com/kubernetes-sigs/metrics-server) service to be installed  in the Kubernetes cluster, (not mentioned in the task!) so this is considered in the deployment of all the structure (through Kustomise, as will be described further)
 
 Helm chart *internal-service* has a `values.yaml` file with the default configuration values, as required: `hub`, `image`, `tag`, `prod`, `env`, `resources` . Some comments have been added to the helm templates, through which the use of some additional variables can be added (marked as optional in `values.yaml`)
 
@@ -64,10 +63,9 @@ Helm chart *internal-service* has a `values.yaml` file with the default configur
 
 As mentioned in the task, the only distinction of dev and prod environment must be the value of the environment variable `PROD=“true”/“false”`, which is controlled by the Helm chart value called *prod*. 
 No ingress resource configured in the chart, also there is no any persistent volume setup.
-
 5. ## Run on [kind](https://kind.sigs.k8s.io/)
 
-- #### Set up a local kind cluster
+- Set up a local kind cluster
 
 As described in kind [quick-start](https://kind.sigs.k8s.io/docs/user/quick-start) page, it can be installed simply from release binaries, for instance
 
@@ -91,7 +89,29 @@ chmod +x ./kind
 mv ./kind /some-dir-in-your-PATH/kind
 ```
 
-- #### Install the chart for both dev and prod (installation of [Helm](https://helm.sh/docs/intro/install/) is prerequisite)
+After installation of kind, next step is to create and configure a Kubernetes cluster.
+Kind uses **Docker (prerequisite for kind)** as platform for running of the cluster nodes, as one kind cluster node actually is one running Docker container. The minimal setup of K8S cluster with kind is with only one control-plane node, which functions as worker node. In our case we have as requirement the mentioned above pod affinity, set at the Deployment level, which will manage the spreading of application pods across minimum of 3 (three) Kubernetes cluster nodes. So, we will need a kind configuration with at least 2 (two) worker nodes, additionally to the control-plane node, and this should be our minimal setup. A simple kind configuration file, that can be used to create such cluster can be (that’s I have used in my local setup for the task):
+
+```
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  # Optional: port mapping of local system port 80 to a NodePort 30100, that eventually will be configured further as the Kubernetes service resource
+  # extraPortMappings:
+  # - containerPort: 30100
+  #  hostPort: 80
+  #  listenAddress: "0.0.0.0" # Optional, defaults to "0.0.0.0"
+  #  protocol: tcp # Optional, defaults to tcp
+- role: worker
+  
+- role: worker
+
+```
+   
+The optional port mapping is not actually used in the solution, it’s just a kind of a prerequisite for eventual exposing (externally) of the application on K8S node level, with a NodePort service type.
+
+- Install the chart for both dev and prod (installation of [Helm](https://helm.sh/docs/intro/install/) is prerequisite)
 1) install metrics-server, required for HPA
 ```
 helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-	server/
@@ -102,7 +122,6 @@ helm install metrics-server metrics-server/metrics-server -n kube-system 	\
 ```
   
 2) install the Helm chart for internal-service (make sure you are in the root repository directory)
-
 For dev environment:
 
 ```
