@@ -63,7 +63,6 @@ Helm chart *internal-service* has a `values.yaml` file with the default configur
 
 As mentioned in the task, the only distinction of dev and prod environment must be the value of the environment variable `PROD=“true”/“false”`, which is controlled by the Helm chart value called *prod*. 
 No ingress resource configured in the chart, also there is no any persistent volume setup.
-
 5. ## Run on [kind](https://kind.sigs.k8s.io/)
 
 - Set up a local kind cluster
