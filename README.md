@@ -92,7 +92,7 @@ mv ./kind /some-dir-in-your-PATH/kind
 ```
 
 After installation of kind, next step is to create and configure a Kubernetes cluster.
-Kind uses **Docker (prerequisite for kind)** as platform for running of the cluster nodes, as one kind cluster node actually is one running Docker container. The minimal setup of K8S cluster with kind is with only one control-plane node, which functions as worker node. In our case we have as requirement the mentioned above pod affinity, set at the Deployment level, which will manage the spreading of application pods across minimum of 3 (three) Kubernetes cluster nodes. So, we will need a kind configuration with at least 2 (two) worker nodes, additionally to the control-plane node, and this should be our minimal setup. A simple kind configuration file, that can be used to create such cluster can be (that’s I have used in my local setup for the task):
+Kind uses **Docker (prerequisite for kind)** as platform for running of the cluster nodes, as one kind cluster node actually is one running Docker container. The minimal setup of K8S cluster with kind is with only one control-plane node, which functions as worker node. In our case we have as requirement the mentioned above pod affinity, set at the Deployment level, which will manage the spreading of application pods across minimum of 3 (three) Kubernetes cluster nodes. So, we will need a kind configuration with at least 2 (two) worker nodes, additionally to the control-plane node, and this should be our minimal setup. A simple kind configuration file (`kind/kind-config.yaml)`, that can be used to create such cluster can be (that’s I have used in my local setup for the task):
 
 ```
 kind: Cluster
@@ -112,6 +112,16 @@ nodes:
 ```
    
 The optional port mapping is not actually used in the solution, it’s just a kind of a prerequisite for eventual exposing (externally) of the application on K8S node level, with a NodePort service type.
+
+Create the so configured kind cluster with:
+
+```
+kind create cluster --config kind/kind-config.yaml --name task
+
+# To check for created nodes
+kind get nodes -n task
+```
+
 
 - Install the chart for both dev and prod (installation of [Helm](https://helm.sh/docs/intro/install/) is prerequisite)
 1) install metrics-server, required for HPA
