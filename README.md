@@ -166,10 +166,15 @@ Still, Helm and Kustomize are complementary tools that can be used together to m
 
 “
 - *You don’t have control over the Helm chart*
+
 *One of the benefits of Helm is that it’s considered the “package manager of Kubernetes”. It’s quite common to pull and use a Helm chart somebody else published in a Helm repository. What if you want to modify something in the manifests, (or even - to add new files, that are not defined in chart )- ? Kustomize makes this simple.*
+
 - *You don’t want your secrets in a Helm chart (but you might want them patched in by Kustomize)*
+
 *When working with Secret and ConfigMap resources, you might not want them baked into your Helm charts (or set through values). Having Kustomize create the resources after Helm has inflated the charts is a better way to inject this sensitive data in the cluster.*
+
 - *Cross-cutting fields*
+
 *In certain instances, you may want to force all (or a subset of) resources to a namespace, or apply a label to these resources. Typically you wouldn’t want to have that in your Helm charts, but Kustomize can easily overlay this configuration on your resources.*
 
 “
