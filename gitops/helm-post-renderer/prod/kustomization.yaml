@@ -1,0 +1,7 @@
+resources:
+- helm-generated-output.yaml
+
+patches:
+- path: depl-patch.yaml
+  target:
+    kind: Deployment
