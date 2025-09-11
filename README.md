@@ -159,16 +159,19 @@ helm install internal-service-prod -n prod \
 
 ### Description of the concrete solution
 [Kustomize](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/) is a configuration management tool for Kubernetes that allows customisation of Kubernetes manifests without modifying the original manifests. Kustomize provides a declarative approach to managing Kubernetes configurations, making it easy to manage complex configurations.
-By its nature, Helm allows customisation of Kubernetes manifests through setting different than default values in values.yaml files, thereby doing every Helm chart release specific for a given environment or infrastructure. Kustomise can do the completely same thing through its mechanism of patching (“Kustomization”)  of YAML files. So, in this very simple usecase -  customisation through variables of a base set of YAML manifests for K8S resources - both tools are doing the same task.   
+
+By its nature, Helm allows customisation of Kubernetes manifests through setting different than default values in values.yaml files, thereby doing every Helm chart release specific for a given environment or infrastructure. Kustomise can do the completely same thing through its mechanism of patching (“Kustomization”)  of YAML files. So, in this very simple usecase -  customisation through variables of a base set of YAML manifests for K8S resources - both tools are doing the same task.
+   
 Still, Helm and Kustomize are complementary tools that can be used together to manage Kubernetes manifests. Helm can be used to manage the release cycle of the applications and Kustomize can be used to customise the Kubernetes manifests. Even more - there are several usecases that can only benefit of together use of these two tools, as otherwise the solutions can be a much more complex (below is cited from this [article](https://trstringer.com/helm-kustomize/)):
 
 “
-- You don’t have control over the Helm chart
-One of the benefits of Helm is that it’s considered the “package manager of Kubernetes”. It’s quite common to pull and use a Helm chart somebody else published in a Helm repository. What if you want to modify something in the manifests, *(or even - to add new files, that are not defined in chart )*- ? Kustomize makes this simple.
-- You don’t want your secrets in a Helm chart (but you might want them patched in by Kustomize)
-When working with Secret and ConfigMap resources, you might not want them baked into your Helm charts (or set through values). Having Kustomize create the resources after Helm has inflated the charts is a better way to inject this sensitive data in the cluster.
-- Cross-cutting fields
-In certain instances, you may want to force all (or a subset of) resources to a namespace, or apply a label to these resources. Typically you wouldn’t want to have that in your Helm charts, but Kustomize can easily overlay this configuration on your resources.
+- *You don’t have control over the Helm chart*
+*One of the benefits of Helm is that it’s considered the “package manager of Kubernetes”. It’s quite common to pull and use a Helm chart somebody else published in a Helm repository. What if you want to modify something in the manifests, (or even - to add new files, that are not defined in chart )- ? Kustomize makes this simple.*
+- *You don’t want your secrets in a Helm chart (but you might want them patched in by Kustomize)*
+*When working with Secret and ConfigMap resources, you might not want them baked into your Helm charts (or set through values). Having Kustomize create the resources after Helm has inflated the charts is a better way to inject this sensitive data in the cluster.*
+- *Cross-cutting fields*
+*In certain instances, you may want to force all (or a subset of) resources to a namespace, or apply a label to these resources. Typically you wouldn’t want to have that in your Helm charts, but Kustomize can easily overlay this configuration on your resources.*
+
 “
 
 The two main (mutually exclusive) ways to use them together are:
@@ -178,8 +181,10 @@ The two main (mutually exclusive) ways to use them together are:
 Trying to be more comprehensive in my solution, I decided to present both options, although I personally think that the first option would not be suitable in a real case of a complex Kubernetes infrastructure, which is (almost) entirely based on using Helm charts for deployment (and in general this option may make the use of Kustomize meaningless).
 
 **First variant 1)** is placed under both directories: `gitops/base/` and `gitops/overlays/`.  
-Directory `gitops/base/` is dedicated for definitions of the resources or presenting of variable values, that are common for both environments. As described above, the Metrics Server is a service that is required for use of HPA(HorizontalPodAutoscaler) in a Kubernetes Deployment level, so it is a real candidate for a Kustomize Component, that would be necessary to be **reused** (not duplicated) in both the environments.   
+Directory `gitops/base/` is dedicated for definitions of the resources or presenting of variable values, that are common for both environments. As described above, the Metrics Server is a service that is required for use of HPA(HorizontalPodAutoscaler) in a Kubernetes Deployment level, so it is a real candidate for a Kustomize Component, that would be necessary to be **reused** (not duplicated) in both the environments.
+   
 Directory `gitops/overlays/` contains Kustomize-related code for the two environments (sub-dirs `dev/` and `prod/`) that are differentiated only by the Helm chart value “prod” (“true”/“false”).  In the subdirectory `common/` of every environment directory is the `kustomization.yaml` file for use of the components for deployment of metrics-server Helm chart (as common for the both envs) . And, in subdirectory `internal-service/` of every  environment directory are located: `namespace.yaml` for creation of environment-specific namespace that the web app pod and its hpa will be placed, as well as the `kustomization.yaml` that is inflating also the manifests of the locally-sourced `internal-service` Helm chart, and that are customised through the use of `patch-env.yaml` file in the *additionalValuesFiles* attribute of helmCharts field.
+
 Implementation of the two environments in this variant 1) can be done by rendering through Kustomize (“kustomisation”) of the all Kubernetes resources definitions as YAML manifests, and applying them through kubectl apply, as this can be done in two steps: first - rendering and storing the manifests, and second - applying them (if this the actual goal of the task), or in one pass, containing  the both steps.
 
 - Dev environment (being in `gitops/` dir):
@@ -212,7 +217,8 @@ kustomize build ./overlays/prod --enable-helm \
 --load-restrictor LoadRestrictionsNone | kubectl apply -f -
 ```
 
-**Second variant 2)** implements an example of use of Helm [post-renderer](https://gist.github.com/neoakris/edc0642a088be2cdc4f5ffe8d90ef5ca), running Kustomize,  in Helm release install/upgrade, in order to be able to track and maintain the whole deployed infrastructure in Helm. In my opinion, even if this solution seems advanced, it is more effective and justifies using both tools together. 
+**Second variant 2)** implements an example of use of Helm [post-renderer](https://gist.github.com/neoakris/edc0642a088be2cdc4f5ffe8d90ef5ca), running Kustomize,  in Helm release installation/upgrade, in order to be able to track and maintain the whole deployed infrastructure in Helm. In my opinion, even if this solution seems advanced, it is more effective and justifies using both tools together. 
+
 The solution is placed inside the `gitops/helm-post-renderer/` directory,. Every one of the environment-dedicated sub-directories (`dev/` and `prod/`) contains:
  
 * `kustomize.sh` (the actual script, acting as post-renderer, which function is described in comments inside the script);
